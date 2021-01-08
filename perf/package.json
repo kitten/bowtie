@@ -1,0 +1,13 @@
+{
+  "name": "@bowtie/perf",
+  "private": true,
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "benchr suite.js"
+  },
+  "devDependencies": {
+    "benchr": "^4.3.0",
+    "stylis": "^4.0.6"
+  }
+}
