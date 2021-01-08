@@ -17,10 +17,14 @@ const unit = /%|\w+/g;
 const simple_selector = /[&*]|[#.]?[_\w][_-\w\d]*/g;
 // A string is bound by quotes, which may escape quotes and newlines
 const string = /"(?:[^\n"]|\\.)*"|'(?:[^\n']|\\.)*'/g;
-// A hex color with 3-8 digits (loose definition)
-const hexcolor = /#[0-9a-fA-F]{3,8}/g;
 
-const property = match('property')`
+// A hex color with 3-8 digits (loose definition)
+const hex = match('hex')`
+  ${/#[0-9a-fA-F]{3,8}/}
+  (?: ${ignore}?)
+`;
+
+const id = match('id')`
   ${identifier}
   (?: ${ignore}?)
 `;
@@ -76,30 +80,31 @@ const selector = match('selector')`
   (?: ${ignore}?)
 `;
 
-const value_term = match('value_term')`
-  (
-    (${number} ${unit}?) |
-    ${func} |
-    ${identifier} |
-    ${hexcolor} |
-    ${string}
-  )
+const value = match('value')`
+  (${number} ${unit}? | ${string})
   (?: ${ignore}?)
+`;
+
+const value_term = match('term')`
+  ${func} |
+  ${id} |
+  ${hex} |
+  ${value}
 `;
 
 const operator = match('operator')`
   ${/[/,*+-]/} (?: ${ignore}?)
 `;
 
-const value = match('value')`
+const value_expr = match('expr')`
   ${value_term}
   (${operator}? ${value_term})*
 `;
 
 const declaration = match('declaration')`
-  ${property}
+  ${id}
   (?: ${/:/} ${ignore}?)
-  ${value}
+  ${value_expr}
   ${important}?
 `;
 
@@ -109,16 +114,11 @@ const at_declaration = match('at_declaration')`
   (?: ${/\)/} ${ignore}?)
 `;
 
-const at_medium = match('at_medium')`
-  ${identifier}
-  (?: ${ignore}?)
-`;
-
 const at_expr = match('at_expr')`
-  ${at_medium} | ${at_declaration}
+  ${id} | ${at_declaration}
   (
     (?: ${/,/} ${ignore}?) |
-    ${at_medium} |
+    ${id} |
     ${at_declaration}
   )*
 `;

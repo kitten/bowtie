@@ -3,7 +3,7 @@ export const stringify = x => {
 
   let separator = '';
   switch (x.tag) {
-    case 'value':
+    case 'expr':
     case 'selector':
     case 'at_expr':
       separator = ' ';
@@ -11,6 +11,10 @@ export const stringify = x => {
     case 'set':
       separator = ';\n';
       break;
+
+    case 'id':
+    case 'hex':
+      return x[0];
     case 'important':
       return '!important';
     case 'pseudo_args':
