@@ -5,8 +5,9 @@
  */
 import { match, interpolation, parse as makeParser } from 'reghex';
 
-// Includes any whitespace, multiline comments, and line comments
-const ignore = /(?:\s+|\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/|\/\/[^\n\r]*)+/g;
+// Used to ignore any whitespaces, multiline comments, and line comments
+const _ = /(?:\s+|\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/|\/\/[^\n\r]*)*/g;
+
 // Any number including sign, decimals, and exponents
 const number = /[+-]?(?:\d*[.])?\d+(?:[eE][+-]?\d+)?/g;
 // Valid identifiers are words including hyphens and underscores
@@ -23,22 +24,22 @@ const extTag = tag => x =>
 
 const ext_css = match('ext_css')`
   ${interpolation(extTag('set'))}
-  (?: ${/;/} ${ignore}?)*
+  (?: ${';'} ${_})*
 `;
 
 const ext_property = match('ext_property')`
   ${interpolation(extTag('id'))}
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const ext_value = match('ext_value')`
   ${interpolation(extTag('expr'))}
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const ext_selector = match('ext_selector')`
   ${interpolation(extTag('selector'))}
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const ext_at = match('ext_at')`
@@ -48,29 +49,29 @@ const ext_at = match('ext_at')`
 // A hex color with 3-8 digits (loose definition)
 const hex = match('hex')`
   ${/#[0-9a-fA-F]{3,8}/}
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const id = match('id')`
   ${identifier}
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const important = match('important')`
-  (?: ${/!/} ${ignore}? ${/important/} ${ignore}?)
+  (?: ${'!'} ${_} ${/important/} ${_})
 `;
 
 const func = match('func')`
   ${identifier}
-  (?: ${/\(/} ${ignore}?)
+  (?: ${'('} ${_})
   ${value}
-  (?: ${/\)/} ${ignore}?)
+  (?: ${')'} ${_})
 `;
 
 const pseudo_args = match('pseudo_args')`
-  (?: ${/\(/} ${ignore}?)
+  (?: ${'('} ${_})
   ${selector}?
-  (?: ${ignore}? ${/\)/})
+  (?: ${_} ${')'})
 `;
 
 const pseudo = match('pseudo')`
@@ -80,36 +81,36 @@ const pseudo = match('pseudo')`
 `;
 
 const attrib = match('attrib')`
-  (?: ${/\[/} ${ignore}?)
+  (?: ${'['} ${_})
   ${identifier}
-  (?: ${ignore}?)
+  (?: ${_})
   ${/[~|^$*]?=/}
-  (?: ${ignore}?)
+  (?: ${_})
   ${string}
-  (?: ${ignore}?)
+  (?: ${_})
   ${/[iIsS]/}?
-  (?: ${ignore}? ${/\]/} ${ignore}?)
+  (?: ${_} ${']'} ${_})
 `;
 
 const selector_term = match('selector_term')`
   (${ext_selector} | ${simple_selector} | ${attrib} | ${pseudo})
   (${ext_selector} | ${simple_selector} | ${attrib} | ${pseudo})*
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const combinator = match('combinator')`
-  ${/[>+~]/} (?: ${ignore}?)
+  ${/[>+~]/} (?: ${_})
 `;
 
 const selector = match('selector')`
   (${combinator}? ${selector_term})
   (${combinator}? ${selector_term})*
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const value = match('value')`
   (${number} ${unit}? | ${string})
-  (?: ${ignore}?)
+  (?: ${_})
 `;
 
 const value_term = match('term')`
@@ -121,7 +122,7 @@ const value_term = match('term')`
 `;
 
 const operator = match('operator')`
-  ${/[/,*+-]/} (?: ${ignore}?)
+  ${/[/,*+-]/} (?: ${_})
 `;
 
 const value_expr = match('expr')`
@@ -131,7 +132,7 @@ const value_expr = match('expr')`
 
 const declaration = match('declaration')`
   (${id} | ${ext_property})
-  (?: ${/:/} ${ignore}?)
+  (?: ${':'} ${_})
   ${value_expr}
   ${important}?
 `;
@@ -139,42 +140,42 @@ const declaration = match('declaration')`
 const at_term = match('at_term')`
   ${ext_at} |
   ${id} |
-  (?: ${/\(/} ${ignore}?)
+  (?: ${/\(/} ${_})
   ${declaration}
-  (?: ${/\)/} ${ignore}?)
+  (?: ${/\)/} ${_})
 `;
 
 const at_expr = match('at_expr')`
   ${at_term}
   (
-    (?: ${/,/} ${ignore}?) |
+    (${','} (?: ${_})) |
     ${at_term}
   )*
 `;
 
 const at_rule = match('at_rule')`
-  (?: ${/@/}) ${identifier}
-  (?: ${ignore}?)
+  (?: ${'@'}) ${identifier}
+  (?: ${_})
   ${at_expr}?
 `;
 
 const rule = match('rule')`
   (?= ${/[^;}]+{/})
   (${at_rule} | ${selector})
-  (?: ${/{/} ${ignore}?)
+  (?: ${'{'} ${_})
   ${set}
-  (?: ${/}/} ${ignore}?)
+  (?: ${'}'} ${_})
 `;
 
 const recover = match('recover')`
-  ${/[^;}]+;?/} (?: ${ignore}?)
+  ${/[^;}]+;?/} (?: ${_})
 `;
 
 const set = match('set')`
   (
     ${rule} |
     ${ext_css} |
-    ${declaration} (?: ${/;/} ${ignore}?)* |
+    ${declaration} (?: ${';'} ${_})* |
     ${recover}
   )*
 `;
