@@ -12,6 +12,15 @@ export const stringify = x => {
       separator = ';\n';
       break;
 
+    case 'ext_css':
+    case 'ext_property':
+    case 'ext_value':
+    case 'ext_selector':
+    case 'ext_at':
+      return typeof x[0] !== 'function'
+        ? stringify(x[0])
+        : '/*ext*/';
+
     case 'id':
     case 'hex':
       return x[0];

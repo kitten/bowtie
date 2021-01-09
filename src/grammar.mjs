@@ -3,7 +3,7 @@
  * alterations made as needed for CSS 3 or simplifications that increase looseness.
  * See: https://www.w3.org/TR/CSS21/grammar.html
  */
-import { match, parse as makeParser } from 'reghex';
+import { match, interpolation, parse as makeParser } from 'reghex';
 
 // Includes any whitespace, multiline comments, and line comments
 const ignore = /(?:\s+|\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/|\/\/[^\n\r]*)+/g;
@@ -17,6 +17,33 @@ const unit = /%|\w+/g;
 const simple_selector = /[&*]|[#.]?[_\w][_-\w\d]*/g;
 // A string is bound by quotes, which may escape quotes and newlines
 const string = /"(?:[^\n"]|\\.)*"|'(?:[^\n']|\\.)*'/g;
+
+const extTag = tag => x =>
+  !!x && (typeof x === 'string' || typeof x === 'function' || x.tag === tag) && x;
+
+const ext_css = match('ext_css')`
+  ${interpolation(extTag('set'))}
+  (?: ${/;/} ${ignore}?)*
+`;
+
+const ext_property = match('ext_property')`
+  ${interpolation(extTag('id'))}
+  (?: ${ignore}?)
+`;
+
+const ext_value = match('ext_value')`
+  ${interpolation(extTag('expr'))}
+  (?: ${ignore}?)
+`;
+
+const ext_selector = match('ext_selector')`
+  ${interpolation(extTag('selector'))}
+  (?: ${ignore}?)
+`;
+
+const ext_at = match('ext_at')`
+  ${interpolation(extTag('at_expr'))}
+`;
 
 // A hex color with 3-8 digits (loose definition)
 const hex = match('hex')`
@@ -65,8 +92,8 @@ const attrib = match('attrib')`
 `;
 
 const selector_term = match('selector_term')`
-  (${simple_selector} | ${attrib} | ${pseudo})
-  (${simple_selector} | ${attrib} | ${pseudo})*
+  (${ext_selector} | ${simple_selector} | ${attrib} | ${pseudo})
+  (${ext_selector} | ${simple_selector} | ${attrib} | ${pseudo})*
   (?: ${ignore}?)
 `;
 
@@ -86,6 +113,7 @@ const value = match('value')`
 `;
 
 const value_term = match('term')`
+  ${ext_value} |
   ${func} |
   ${id} |
   ${hex} |
@@ -102,24 +130,25 @@ const value_expr = match('expr')`
 `;
 
 const declaration = match('declaration')`
-  ${id}
+  (${id} | ${ext_property})
   (?: ${/:/} ${ignore}?)
   ${value_expr}
   ${important}?
 `;
 
-const at_declaration = match('at_declaration')`
+const at_term = match('at_term')`
+  ${ext_at} |
+  ${id} |
   (?: ${/\(/} ${ignore}?)
   ${declaration}
   (?: ${/\)/} ${ignore}?)
 `;
 
 const at_expr = match('at_expr')`
-  ${id} | ${at_declaration}
+  ${at_term}
   (
     (?: ${/,/} ${ignore}?) |
-    ${id} |
-    ${at_declaration}
+    ${at_term}
   )*
 `;
 
@@ -144,6 +173,7 @@ const recover = match('recover')`
 const set = match('set')`
   (
     ${rule} |
+    ${ext_css} |
     ${declaration} (?: ${/;/} ${ignore}?)* |
     ${recover}
   )*
