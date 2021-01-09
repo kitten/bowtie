@@ -934,10 +934,10 @@ regexpu-core@4.5.4:
     unicode-match-property-ecmascript "^1.0.4"
     unicode-match-property-value-ecmascript "^1.1.0"
 
-reghex@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/reghex/-/reghex-2.0.3.tgz#a19e7324a8fc09f5e5704242b53d02dcf3db5419"
-  integrity sha512-re2Xx1ITU5tz6jEkLwfsvIOtFbfDvuI4EXF2wNOc1zC7iwzet+hu0d+7YvxCViTQ81Qx2gqCdS/pbKepTbK9sA==
+reghex@^3.0.0-beta.1:
+  version "3.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/reghex/-/reghex-3.0.0-beta.1.tgz#8a45730593e785898d08fb9ee85ffbe096488ff8"
+  integrity sha512-dLhuUWn0oXhSuBOPf2xZZGyApU47lqUEn9NpSeQ4waXXn103XBQQMiBGFZYqwHqMCMRB+dWiCPSw2KqPvwIAlg==
 
 regjsgen@^0.5.0:
   version "0.5.2"

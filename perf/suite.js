@@ -1,7 +1,7 @@
 const bowtie = require('..');
 const stylis = require('stylis');
 
-const input = `
+const complex = `
   color:black;
 
   div {
@@ -26,12 +26,31 @@ const input = `
   }
 `;
 
-suite('Parse', () => {
+const simple = `
+  color: black;
+  background: red;
+
+  .foo & {
+    width: 1px;
+  }
+`;
+
+suite('Parse Complex', () => {
   benchmark('bowtie', () => {
-    bowtie.parse(input);
+    bowtie.parse(complex);
   });
 
   benchmark('stylis', () => {
-    stylis.compile(input);
+    stylis.compile(complex);
+  });
+});
+
+suite('Parse Simple', () => {
+  benchmark('bowtie', () => {
+    bowtie.parse(simple);
+  });
+
+  benchmark('stylis', () => {
+    stylis.compile(simple);
   });
 });

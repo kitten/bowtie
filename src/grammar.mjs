@@ -14,6 +14,8 @@ const number = /[+-]?(?:\d*[.])?\d+(?:[eE][+-]?\d+)?/g;
 const identifier = /-{0,2}[\w_][\w\d_-]*/g;
 // Valid units that may follow a number
 const unit = /%|\w+/g;
+// A hex color with 3-8 digits (loose definition)
+const hexcolor = /#[0-9a-fA-F]{3,8}/g;
 // Valid element selectors targeting classes, IDs, elements, and self/star selectors
 const simple_selector = /[&*]|[#.]?[_\w][_-\w\d]*/g;
 // A string is bound by quotes, which may escape quotes and newlines
@@ -29,32 +31,26 @@ const ext_css = match('ext_css')`
 
 const ext_property = match('ext_property')`
   ${interpolation(extTag('id'))}
-  (?: ${_})
+  :${_}
 `;
 
 const ext_value = match('ext_value')`
   ${interpolation(extTag('expr'))}
-  (?: ${_})
+  :${_}
 `;
 
 const ext_selector = match('ext_selector')`
   ${interpolation(extTag('selector'))}
-  (?: ${_})
+  :${_}
 `;
 
 const ext_at = match('ext_at')`
   ${interpolation(extTag('at_expr'))}
 `;
 
-// A hex color with 3-8 digits (loose definition)
-const hex = match('hex')`
-  ${/#[0-9a-fA-F]{3,8}/}
-  (?: ${_})
-`;
-
 const id = match('id')`
   ${identifier}
-  (?: ${_})
+  :${_}
 `;
 
 const important = match('important')`
@@ -83,11 +79,11 @@ const pseudo = match('pseudo')`
 const attrib = match('attrib')`
   (?: ${'['} ${_})
   ${identifier}
-  (?: ${_})
+  :${_}
   ${/[~|^$*]?=/}
-  (?: ${_})
+  :${_}
   ${string}
-  (?: ${_})
+  :${_}
   ${/[iIsS]/}?
   (?: ${_} ${']'} ${_})
 `;
@@ -95,34 +91,33 @@ const attrib = match('attrib')`
 const selector_term = match('selector_term')`
   (${ext_selector} | ${simple_selector} | ${attrib} | ${pseudo})
   (${ext_selector} | ${simple_selector} | ${attrib} | ${pseudo})*
-  (?: ${_})
+  :${_}
 `;
 
 const combinator = match('combinator')`
-  ${/[>+~]/} (?: ${_})
+  ${/[>+~]/} :${_}
 `;
 
 const selector = match('selector')`
   (${combinator}? ${selector_term})
   (${combinator}? ${selector_term})*
-  (?: ${_})
+  :${_}
 `;
 
 const value = match('value')`
-  (${number} ${unit}? | ${string})
-  (?: ${_})
+  (${number} ${unit}? | ${string} | ${hexcolor})
+  :${_}
 `;
 
 const value_term = match('term')`
   ${ext_value} |
   ${func} |
   ${id} |
-  ${hex} |
   ${value}
 `;
 
 const operator = match('operator')`
-  ${/[/,*+-]/} (?: ${_})
+  ${/[/,*+-]/} :${_}
 `;
 
 const value_expr = match('expr')`
@@ -148,19 +143,19 @@ const at_term = match('at_term')`
 const at_expr = match('at_expr')`
   ${at_term}
   (
-    (${','} (?: ${_})) |
+    (${','} :${_}) |
     ${at_term}
   )*
 `;
 
 const at_rule = match('at_rule')`
-  (?: ${'@'}) ${identifier}
-  (?: ${_})
+  :${'@'} ${identifier}
+  :${_}
   ${at_expr}?
 `;
 
 const rule = match('rule')`
-  (?= ${/[^;}]+{/})
+  =${/[^;}]+{/}
   (${at_rule} | ${selector})
   (?: ${'{'} ${_})
   ${set}
@@ -168,7 +163,7 @@ const rule = match('rule')`
 `;
 
 const recover = match('recover')`
-  ${/[^;}]+;?/} (?: ${_})
+  ${/[^;}]+;?/} :${_}
 `;
 
 const set = match('set')`
